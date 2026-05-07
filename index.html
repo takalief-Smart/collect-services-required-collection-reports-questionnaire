@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استبيان تقارير التحصيل المطلوبة - تحصيل الدفعات والفواتير | تكاليف</title>
+    <!-- Bootstrap RTL -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #1e4a3b 0%, #2d6a4e 100%);
+            min-height: 100vh;
+            color: #1e3a3a;
+            padding: 20px;
+        }
+        
+        .main-header {
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 50px 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border-bottom: 3px solid #52b788;
+        }
+        
+        .company-badge {
+            background: rgba(82, 183, 136, 0.3);
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: 600;
+            border: 1px solid #52b788;
+            color: white;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+            margin-bottom: 2rem;
+            background-color: #f8faf8;
+            border: 1px solid #e4f2e4;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #1e4a3b 0%, #2d6a4e 100%);
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            border-bottom: 2px solid #52b788;
+        }
+        
+        .btn-custom {
+            background: #52b788;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid #1e4a3b;
+        }
+        
+        .btn-custom:hover {
+            background: #2d6a4e;
+            transform: scale(1.05);
+            color: white;
+            box-shadow: 0 5px 20px rgba(82, 183, 136, 0.4);
+        }
+        
+        .btn-excel {
+            background: #1e4a3b;
+            color: white;
+            border: 2px solid #52b788;
+        }
+        
+        .btn-excel:hover {
+            background: #2d6a4e;
+            color: white;
+        }
+        
+        .btn-pdf {
+            background: #4a6b5a;
+            color: white;
+            border: 2px solid #52b788;
+        }
+        
+        .btn-pdf:hover {
+            background: #1e4a3b;
+            color: white;
+        }
+        
+        .form-label {
+            color: #2d6a4e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .form-control, .form-select {
+            border: 2px solid #e4f2e4;
+            border-radius: 10px;
+            padding: 0.75rem;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #52b788;
+            box-shadow: 0 0 0 0.2rem rgba(82, 183, 136, 0.25);
+        }
+        
+        .data-entry-section {
+            background: #f0f7f0;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 3px solid #52b788;
+        }
+        
+        .client-info-card {
+            background: linear-gradient(135deg, #f8faf8 0%, #ffffff 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 2px solid #52b788;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .client-info-title {
+            color: #1e4a3b;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .client-info-title i {
+            color: #52b788;
+            margin-left: 10px;
+            font-size: 1.5rem;
+        }
+        
+        .required-field::after {
+            content: "*";
+            color: #dc3545;
+            margin-right: 4px;
+        }
+        
+        .footer {
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            padding: 3rem 0 1.5rem;
+            margin-top: 3rem;
+            border-radius: 50px 50px 0 0;
+            border-top: 3px solid #52b788;
+        }
+        
+        .footer-links {
+            color: #e4f2e4;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .footer-links:hover {
+            color: #52b788;
+            padding-right: 5px;
+        }
+        
+        .contact-item {
+            margin-bottom: 10px;
+            color: #e4f2e4;
+        }
+        
+        .contact-item i {
+            color: #52b788;
+            margin-left: 10px;
+            width: 20px;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(82, 183, 136, 0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            color: #52b788;
+            transition: all 0.3s ease;
+            border: 1px solid #52b788;
+        }
+        
+        .social-icon:hover {
+            background: #52b788;
+            color: #0e3b2c;
+            transform: translateY(-3px);
+        }
+        
+        .nav-tabs-custom {
+            border-bottom: 3px solid #52b788;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #1e4a3b 0%, #2d6a4e 100%);
+            border-radius: 50px;
+            padding: 0.5rem;
+        }
+        
+        .nav-tabs-custom .nav-link {
+            color: white !important;
+            font-weight: 600;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs-custom .nav-link i {
+            color: white;
+        }
+        
+        .nav-tabs-custom .nav-link.active {
+            color: #1e4a3b !important;
+            background: #52b788;
+            border: 2px solid white;
+        }
+        
+        .nav-tabs-custom .nav-link.active i {
+            color: #1e4a3b;
+        }
+        
+        .preview-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            border: 2px solid #52b788;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header {
+            background: #e8f5e9;
+            padding: 0.75rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-right: 5px solid #52b788;
+            font-weight: 700;
+            color: #1e4a3b;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .data-table th, .data-table td {
+            padding: 0.6rem;
+            border: 1px solid #52b788;
+            text-align: right;
+            vertical-align: top;
+        }
+        
+        .data-table th {
+            background: #1e4a3b;
+            color: white;
+            font-weight: 700;
+            text-align: center;
+        }
+        
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        
+        .info-table th, .info-table td {
+            padding: 0.5rem;
+            border: 1px solid #e4f2e4;
+            text-align: right;
+        }
+        
+        .info-table th {
+            background: #e8f5e9;
+            color: #1e4a3b;
+            width: 40%;
+        }
+        
+        .report-item {
+            background: #f8faf8;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #e4f2e4;
+        }
+        
+        /* PDF Export Container */
+        #pdf-export-container {
+            position: fixed;
+            top: -99999px;
+            left: -99999px;
+            width: 800px;
+            background: white;
+            z-index: 9999;
+            padding: 30px;
+            opacity: 0;
+            pointer-events: none;
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .pdf-wrapper {
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            direction: rtl;
+        }
+        
+        .pdf-cover {
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 30px;
+            margin-bottom: 30px;
+            border: 4px solid #52b788;
+            text-align: center;
+        }
+        
+        .pdf-section-title {
+            color: #1e4a3b;
+            font-size: 18px;
+            font-weight: 800;
+            margin: 25px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #52b788;
+        }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 11px;
+            border: 1px solid #52b788;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .pdf-table th {
+            background: #1e4a3b;
+            color: white;
+            padding: 10px 8px;
+            font-weight: 700;
+            text-align: center;
+            font-size: 11px;
+        }
+        
+        .pdf-table td {
+            padding: 8px;
+            border: 1px solid #e4f2e4;
+            text-align: right;
+            font-size: 10px;
+        }
+        
+        .pdf-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, #0e3b2c 0%, #1b5e3f 100%);
+            color: white;
+            border-radius: 15px;
+            border: 2px solid #52b788;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="main-header text-center no-print">
+        <div class="container">
+            <span class="company-badge mb-3">تكاليف | حلول أعمال ذكية</span>
+            <h1 class="display-4 fw-bold mt-3" style="color: white;">
+                <i class="fas fa-chart-line me-3"></i>
+                استبيان تقارير التحصيل المطلوبة
+            </h1>
+            <p class="lead" style="color: white;">خدمة تحصيل الدفعات والفواتير - تحديد متطلبات التقارير ولوحات المعلومات لتحسين كفاءة التحصيل</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Tabs -->
+        <ul class="nav nav-tabs-custom nav-fill" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="data-entry-tab" data-bs-toggle="tab" data-bs-target="#dataEntry" type="button" role="tab">
+                    <i class="fas fa-edit me-2"></i> استبيان المعلومات
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="preview-tab" data-bs-toggle="tab" data-bs-target="#preview" type="button" role="tab">
+                    <i class="fas fa-eye me-2"></i> معاينة التقرير
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            <!-- Tab 1: Data Entry (نفس المحتوى السابق - تم اختصاره للطول) -->
+            <div class="tab-pane fade show active" id="dataEntry" role="tabpanel">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-chart-line me-2"></i> استبيان تقارير التحصيل المطلوبة - ERP المبسطة
+                    </div>
+                    <div class="card-body">
+                        <!-- بيانات المنشأة -->
+                        <div class="client-info-card">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="client-info-title"><i class="fas fa-building"></i> بيانات المنشأة</div>
+                                    <div class="mb-3"><label class="form-label required-field">اسم المنشأة</label><input type="text" class="form-control" id="companyName" placeholder="أدخل اسم المنشأة"></div>
+                                    <div class="mb-3"><label class="form-label">النشاط الرئيسي</label><input type="text" class="form-control" id="businessActivity" placeholder="مثال: تصنيع / تجارة / خدمات"></div>
+                                    <div class="mb-3"><label class="form-label">حجم المنشأة</label><select class="form-select" id="companySize"><option value="">اختر...</option><option value="صغيرة (أقل من 50 موظف)">صغيرة (أقل من 50 موظف)</option><option value="متوسطة (50-250 موظف)">متوسطة (50-250 موظف)</option><option value="كبيرة (أكثر من 250 موظف)">كبيرة (أكثر من 250 موظف)</option></select></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="client-info-title"><i class="fas fa-address-card"></i> بيانات المسؤول</div>
+                                    <div class="mb-3"><label class="form-label required-field">اسم المسؤول عن التقييم</label><input type="text" class="form-control" id="contactPerson" placeholder="أدخل اسم المسؤول"></div>
+                                    <div class="mb-3"><label class="form-label required-field">المسمى الوظيفي</label><input type="text" class="form-control" id="jobTitle" placeholder="مثال: المدير المالي"></div>
+                                    <div class="mb-3"><label class="form-label required-field">البريد الإلكتروني</label><input type="email" class="form-control" id="clientEmail" placeholder="example@company.com"></div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-4"><div class="mb-3"><label class="form-label">رقم الهاتف</label><input type="tel" class="form-control" id="clientPhone" placeholder="رقم الهاتف"></div></div>
+                                <div class="col-md-4"><div class="mb-3"><label class="form-label">تاريخ التعبئة</label><input type="date" class="form-control" id="submissionDate" value="2026-03-30"></div></div>
+                                <div class="col-md-4"><div class="mb-3"><label class="form-label">العملة المستخدمة</label><select class="form-select" id="currencySelect"><option value="EGP" selected>جنيه مصري (EGP)</option><option value="SAR">ريال سعودي (SAR)</option><option value="AED">درهم إماراتي (AED)</option><option value="USD">دولار أمريكي (USD)</option></select></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الأول: معلومات عامة عن نظام التقارير -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-info-circle me-2"></i> القسم الأول: معلومات عامة عن نظام التقارير</h4>
+                            <div class="row">
+                                <div class="col-md-6"><div class="mb-3"><label class="form-label">نظام التقارير المستخدم حالياً</label><select class="form-select" id="reportSystem"><option value="">اختر...</option><option value="Excel يدوي">Excel يدوي</option><option value="تقارير مدمجة مع النظام">تقارير مدمجة مع النظام</option><option value="نظام BI منفصل">نظام BI منفصل</option><option value="لا يوجد نظام تقارير">لا يوجد نظام تقارير</option></select></div></div>
+                                <div class="col-md-6"><div class="mb-3"><label class="form-label">تكرار الحصول على تقارير التحصيل</label><select class="form-select" id="reportFrequency"><option value="">اختر...</option><option value="يومي">يومي</option><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="ربع سنوي">ربع سنوي</option></select></div></div>
+                                <div class="col-md-12"><div class="mb-3"><label class="form-label">تنسيق التقارير المفضل</label><select class="form-select" id="reportFormat"><option value="">اختر...</option><option value="PDF">PDF</option><option value="Excel">Excel</option><option value="كليهما">كليهما</option><option value="لوحة تحكم تفاعلية">لوحة تحكم تفاعلية</option></select></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الثاني: تقارير أعمار الديون -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-calendar-alt me-2"></i> القسم الثاني: تقارير أعمار الديون (Aging Reports)</h4>
+                            <div class="row">
+                                <div class="col-md-12"><label class="form-label">تقارير أعمار الديون المطلوبة (اختر ما يناسب)</label></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportAgingSummary" value="ملخص أعمار الديون الإجمالي"><label class="form-check-label">ملخص أعمار الديون الإجمالي</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportAgingByCustomer" value="أعمار الديون حسب العميل"><label class="form-check-label">أعمار الديون حسب العميل</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportAgingByCategory" value="أعمار الديون حسب فئة العميل"><label class="form-check-label">أعمار الديون حسب فئة العميل</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportAgingBySalesRep" value="أعمار الديون حسب مندوب المبيعات"><label class="form-check-label">أعمار الديون حسب مندوب المبيعات</label></div></div>
+                                <div class="col-md-12"><div class="mb-3 mt-3"><label class="form-label">فئات الأعمار المطلوبة في التقرير</label><textarea class="form-control" id="agingCategories" rows="2" placeholder="مثال: 1-30, 31-60, 61-90, 91-180, 180+"></textarea></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الثالث: تقارير العملاء المتعثرين -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-exclamation-triangle me-2"></i> القسم الثالث: تقارير العملاء المتعثرين</h4>
+                            <div class="row">
+                                <div class="col-md-12"><label class="form-label">تقارير العملاء المتعثرين المطلوبة (اختر ما يناسب)</label></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportTopDistressed" value="أكبر العملاء المتعثرين (Top 10/20)"><label class="form-check-label">أكبر العملاء المتعثرين (Top 10/20)</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportDistressedByPeriod" value="العملاء المتعثرين حسب فترة التأخير"><label class="form-check-label">العملاء المتعثرين حسب فترة التأخير</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportDistressedByCategory" value="العملاء المتعثرين حسب الفئة"><label class="form-check-label">العملاء المتعثرين حسب الفئة</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportNewDistressed" value="العملاء الجدد المتعثرين"><label class="form-check-label">العملاء الجدد المتعثرين</label></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الرابع: تقارير أداء التحصيل -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-chart-simple me-2"></i> القسم الرابع: تقارير أداء التحصيل</h4>
+                            <div class="row">
+                                <div class="col-md-12"><label class="form-label">تقارير أداء التحصيل المطلوبة (اختر ما يناسب)</label></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCollectionRate" value="نسبة التحصيل الإجمالية"><label class="form-check-label">نسبة التحصيل الإجمالية</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCollectionByTeam" value="أداء التحصيل حسب الفريق/الموظف"><label class="form-check-label">أداء التحصيل حسب الفريق/الموظف</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCollectionByChannel" value="أداء التحصيل حسب قناة التواصل"><label class="form-check-label">أداء التحصيل حسب قناة التواصل</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCollectionTrend" value="اتجاهات التحصيل (مقارنات شهرية)"><label class="form-check-label">اتجاهات التحصيل (مقارنات شهرية)</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCollectionForecast" value="توقعات التحصيل"><label class="form-check-label">توقعات التحصيل</label></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الخامس: تقارير متابعة العملاء -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-phone-alt me-2"></i> القسم الخامس: تقارير متابعة العملاء</h4>
+                            <div class="row">
+                                <div class="col-md-12"><label class="form-label">تقارير متابعة العملاء المطلوبة (اختر ما يناسب)</label></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportFollowupLog" value="سجل المتابعة الكامل"><label class="form-check-label">سجل المتابعة الكامل</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportFollowupPending" value="العملاء الذين لم يتم التواصل معهم"><label class="form-check-label">العملاء الذين لم يتم التواصل معهم</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportFollowupPromises" value="الوعود بالدفع وتواريخ الاستحقاق"><label class="form-check-label">الوعود بالدفع وتواريخ الاستحقاق</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportFollowupEffectiveness" value="فعالية محاولات المتابعة"><label class="form-check-label">فعالية محاولات المتابعة</label></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم السادس: تقارير التوقعات والتنبؤات -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-chart-line me-2"></i> القسم السادس: تقارير التوقعات والتنبؤات</h4>
+                            <div class="row">
+                                <div class="col-md-12"><label class="form-label">تقارير التوقعات والتنبؤات المطلوبة (اختر ما يناسب)</label></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCashFlow" value="توقعات التدفقات النقدية الواردة"><label class="form-check-label">توقعات التدفقات النقدية الواردة</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportBadDebt" value="توقعات الديون المعدومة"><label class="form-check-label">توقعات الديون المعدومة</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="reportCollectionForecast" value="توقعات التحصيل الشهرية/الربعية"><label class="form-check-label">توقعات التحصيل الشهرية/الربعية</label></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم السابع: لوحات المعلومات (Dashboards) -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-chart-pie me-2"></i> القسم السابع: لوحات المعلومات (Dashboards)</h4>
+                            <div class="row">
+                                <div class="col-md-12"><label class="form-label">لوحات المعلومات المطلوبة (اختر ما يناسب)</label></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="dashboardExecutive" value="لوحة القيادة التنفيذية للتحصيل"><label class="form-check-label">لوحة القيادة التنفيذية للتحصيل</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="dashboardTeam" value="لوحة أداء فريق التحصيل"><label class="form-check-label">لوحة أداء فريق التحصيل</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="dashboardCustomer" value="لوحة بيانات العميل المتكاملة"><label class="form-check-label">لوحة بيانات العميل المتكاملة</label></div></div>
+                                <div class="col-md-4"><div class="form-check mb-2"><input class="form-check-input" type="checkbox" id="dashboardAging" value="لوحة أعمار الديون التفاعلية"><label class="form-check-label">لوحة أعمار الديون التفاعلية</label></div></div>
+                            </div>
+                        </div>
+
+                        <!-- القسم الثامن: تقارير مخصصة إضافية (ديناميكي) -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-plus-circle me-2"></i> القسم الثامن: تقارير مخصصة إضافية</h4>
+                            <div id="customReportsContainer"></div>
+                            <button class="btn btn-custom btn-sm mt-2" onclick="addCustomReport()"><i class="fas fa-plus-circle me-1"></i> إضافة تقرير مخصص</button>
+                        </div>
+
+                        <!-- القسم التاسع: معلومات إضافية -->
+                        <div class="data-entry-section">
+                            <h4 class="mb-4" style="color: #1e4a3b;"><i class="fas fa-info-circle me-2"></i> القسم التاسع: معلومات إضافية</h4>
+                            <div class="row">
+                                <div class="col-md-12"><div class="mb-3"><label class="form-label">أي معلومات إضافية حول متطلبات التقارير</label><textarea class="form-control" id="additionalInfo" rows="3" placeholder="أي معلومات إضافية"></textarea></div></div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-4">
+                            <button class="btn btn-custom btn-lg" onclick="refreshPreview()"><i class="fas fa-sync-alt me-2"></i> تحديث المعاينة</button>
+                            <button class="btn btn-custom btn-lg mx-2" onclick="resetForm()"><i class="fas fa-undo me-2"></i> إعادة تعيين</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Preview -->
+            <div class="tab-pane fade" id="preview" role="tabpanel">
+                <div class="card">
+                    <div class="card-header"><i class="fas fa-file-alt me-2"></i> معاينة تقرير متطلبات التقارير</div>
+                    <div class="card-body" id="previewContent"></div>
+                </div>
+                <div class="text-center mb-4 no-print">
+                    <button class="btn btn-excel btn-lg mx-2" onclick="exportToExcel()"><i class="fas fa-file-excel me-2"></i> تصدير (Excel)</button>
+                    <button class="btn btn-pdf btn-lg mx-2" onclick="exportToPDF(event)"><i class="fas fa-file-pdf me-2"></i> تصدير التقرير (PDF)</button>
+                    <button class="btn btn-custom btn-lg mx-2" onclick="window.print()"><i class="fas fa-print me-2"></i> طباعة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer no-print">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4"><h5 style="color: #52b788;">تكاليف - حلول أعمال ذكية</h5><p style="color: #e4f2e4;">نقدم خدمات تحصيل الدفعات والفواتير وتحليل متطلبات التقارير.</p></div>
+                <div class="col-md-4 mb-4"><h5 style="color: #52b788;"><i class="fas fa-address-card me-2"></i>معلومات الاتصال</h5><div class="contact-item"><i class="fas fa-map-marker-alt"></i> القاهرة - مصر</div><div class="contact-item"><i class="fas fa-phone-alt"></i><a href="tel:+201044391177" class="footer-links">+20 104 439 1177</a></div><div class="contact-item"><i class="fas fa-envelope"></i><a href="mailto:info@takalief.com" class="footer-links">info@takalief.com</a></div><div class="contact-item"><i class="fas fa-globe"></i><a href="https://www.takalief.com" class="footer-links" target="_blank">www.takalief.com</a></div></div>
+                <div class="col-md-4 mb-4"><h5 style="color: #52b788;"><i class="fas fa-share-alt me-2"></i>تابعنا على</h5><div class="text-center"><a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a><a href="#" class="social-icon"><i class="fab fa-twitter"></i></a><a href="#" class="social-icon"><i class="fab fa-linkedin-in"></i></a><a href="#" class="social-icon"><i class="fab fa-instagram"></i></a><a href="#" class="social-icon"><i class="fab fa-youtube"></i></a><a href="#" class="social-icon"><i class="fab fa-whatsapp"></i></a></div></div>
+            </div>
+            <hr>
+            <div class="row mt-3"><div class="col-md-6 text-md-start text-center"><p class="mb-0" style="color: #e4f2e4;"><i class="fas fa-copyright me-2" style="color: #52b788;"></i>2026 تكاليف - حلول أعمال ذكية. جميع الحقوق محفوظة</p></div><div class="col-md-6 text-md-end text-center"><a href="#" class="footer-links me-3">سياسة الخصوصية</a><a href="#" class="footer-links me-3">شروط الاستخدام</a><a href="#" class="footer-links">الدعم الفني</a></div></div>
+        </div>
+    </footer>
+
+    <div id="pdf-export-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let customReportCount = 1;
+        let selectedCurrency = 'EGP';
+        const currencyNames = { 'EGP': 'جنيه مصري', 'SAR': 'ريال سعودي', 'AED': 'درهم إماراتي', 'USD': 'دولار أمريكي' };
+        
+        document.getElementById('currencySelect').addEventListener('change', function() {
+            selectedCurrency = this.value;
+            refreshPreview();
+        });
+        
+        function addCustomReport() {
+            customReportCount++;
+            const container = document.getElementById('customReportsContainer');
+            const newReport = document.createElement('div');
+            newReport.className = 'report-item';
+            newReport.id = `customReport-${customReportCount}`;
+            newReport.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" placeholder="اسم التقرير" id="reportName${customReportCount}">
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="reportFrequency${customReportCount}">
+                            <option value="">التكرار</option>
+                            <option value="يومي">يومي</option>
+                            <option value="أسبوعي">أسبوعي</option>
+                            <option value="شهري">شهري</option>
+                            <option value="ربع سنوي">ربع سنوي</option>
+                            <option value="عند الطلب">عند الطلب</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select class="form-select" id="reportFormatCustom${customReportCount}">
+                            <option value="">التنسيق</option>
+                            <option value="PDF">PDF</option>
+                            <option value="Excel">Excel</option>
+                            <option value="كليهما">كليهما</option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button class="btn btn-danger btn-sm" onclick="removeCustomReport(${customReportCount})"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <textarea class="form-control" rows="2" placeholder="وصف التقرير والمحتوى المطلوب" id="reportDesc${customReportCount}"></textarea>
+                    </div>
+                </div>
+            `;
+            container.appendChild(newReport);
+            refreshPreview();
+        }
+        
+        function removeCustomReport(id) {
+            if (customReportCount > 1) {
+                const element = document.getElementById(`customReport-${id}`);
+                if (element) element.remove();
+                refreshPreview();
+            } else {
+                alert("لا يمكن حذف التقرير الوحيد المتبقي");
+            }
+        }
+        
+        function getSelectedReports(groupIds) {
+            const reports = [];
+            groupIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && el.checked) reports.push(el.value);
+            });
+            return reports;
+        }
+        
+        function getAgingReports() {
+            const ids = ['reportAgingSummary', 'reportAgingByCustomer', 'reportAgingByCategory', 'reportAgingBySalesRep'];
+            return getSelectedReports(ids);
+        }
+        
+        function getDistressedReports() {
+            const ids = ['reportTopDistressed', 'reportDistressedByPeriod', 'reportDistressedByCategory', 'reportNewDistressed'];
+            return getSelectedReports(ids);
+        }
+        
+        function getPerformanceReports() {
+            const ids = ['reportCollectionRate', 'reportCollectionByTeam', 'reportCollectionByChannel', 'reportCollectionTrend', 'reportCollectionForecast'];
+            return getSelectedReports(ids);
+        }
+        
+        function getFollowupReports() {
+            const ids = ['reportFollowupLog', 'reportFollowupPending', 'reportFollowupPromises', 'reportFollowupEffectiveness'];
+            return getSelectedReports(ids);
+        }
+        
+        function getForecastReports() {
+            const ids = ['reportCashFlow', 'reportBadDebt', 'reportCollectionForecast'];
+            return getSelectedReports(ids);
+        }
+        
+        function getDashboards() {
+            const ids = ['dashboardExecutive', 'dashboardTeam', 'dashboardCustomer', 'dashboardAging'];
+            return getSelectedReports(ids);
+        }
+        
+        function getCustomReportsData() {
+            const reports = [];
+            for (let i = 1; i <= customReportCount; i++) {
+                const nameElem = document.getElementById(`reportName${i}`);
+                const name = nameElem ? nameElem.value : '';
+                if (name) {
+                    const frequency = document.getElementById(`reportFrequency${i}`) ? document.getElementById(`reportFrequency${i}`).value : '';
+                    const format = document.getElementById(`reportFormatCustom${i}`) ? document.getElementById(`reportFormatCustom${i}`).value : '';
+                    const desc = document.getElementById(`reportDesc${i}`) ? document.getElementById(`reportDesc${i}`).value : '';
+                    reports.push({ name, frequency, format, desc });
+                }
+            }
+            return reports;
+        }
+        
+        function getFieldValue(id, defaultValue = '—') {
+            const element = document.getElementById(id);
+            return element && element.value.trim() !== '' ? element.value.trim() : defaultValue;
+        }
+        
+        function getNumberValue(id, defaultValue = '—') {
+            const element = document.getElementById(id);
+            return element && element.value.trim() !== '' ? element.value : defaultValue;
+        }
+        
+        function getSelectText(id, defaultValue = '—') {
+            const select = document.getElementById(id);
+            if (select && select.options[select.selectedIndex] && select.options[select.selectedIndex].value !== '') {
+                return select.options[select.selectedIndex].text;
+            }
+            return defaultValue;
+        }
+        
+        function formatListTable(items, title) {
+            if (!items.length) return '<span style="color: #dc3545;">لا توجد تقارير محددة</span>';
+            let html = '<table class="data-table"><thead><tr><th style="width:10%">#</th><th>' + title + '</th></tr></thead><tbody>';
+            items.forEach((item, index) => {
+                html += `<tr><td style="text-align:center;">${index + 1}</td><td style="text-align:right;">${item}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+        
+        function formatCustomReportsTable() {
+            const reports = getCustomReportsData();
+            if (!reports.length) return '<span style="color: #dc3545;">لا توجد تقارير مخصصة</span>';
+            let html = '<table class="data-table"><thead><tr><th style="width:5%">#</th><th>اسم التقرير</th><th>التكرار</th><th>التنسيق</th><th>الوصف</th></tr></thead><tbody>';
+            reports.forEach((report, index) => {
+                html += `<tr>
+                    <td style="text-align:center;">${index + 1}</td>
+                    <td style="text-align:right;">${report.name}</td>
+                    <td style="text-align:center;">${report.frequency || '—'}</td>
+                    <td style="text-align:center;">${report.format || '—'}</td>
+                    <td style="text-align:right;">${report.desc || '—'}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            return html;
+        }
+        
+        function refreshPreview() {
+            const agingReports = getAgingReports();
+            const distressedReports = getDistressedReports();
+            const performanceReports = getPerformanceReports();
+            const followupReports = getFollowupReports();
+            const forecastReports = getForecastReports();
+            const dashboards = getDashboards();
+            
+            const previewHtml = `
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-building me-2"></i> بيانات المنشأة</div>
+                    <table class="info-table">
+                        <tr><th>اسم المنشأة</th><td>${getFieldValue('companyName')}</td></tr>
+                        <tr><th>النشاط الرئيسي</th><td>${getFieldValue('businessActivity')}</td></tr>
+                        <tr><th>حجم المنشأة</th><td>${getSelectText('companySize')}</td></tr>
+                        <tr><th>المسؤول</th><td>${getFieldValue('contactPerson')} (${getFieldValue('jobTitle')})</td></tr>
+                        <tr><th>البريد الإلكتروني</th><td>${getFieldValue('clientEmail')}</td></tr>
+                        <tr><th>رقم الهاتف</th><td>${getFieldValue('clientPhone')}</td></tr>
+                    </table>
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-info-circle me-2"></i> معلومات عامة عن نظام التقارير</div>
+                    <table class="info-table">
+                        <tr><th>نظام التقارير الحالي</th><td>${getSelectText('reportSystem')}</td></tr>
+                        <tr><th>تكرار التقارير</th><td>${getSelectText('reportFrequency')}</td></tr>
+                        <tr><th>تنسيق التقارير المفضل</th><td>${getSelectText('reportFormat')}</td></tr>
+                    </table>
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-calendar-alt me-2"></i> تقارير أعمار الديون</div>
+                    ${formatListTable(agingReports, 'التقرير')}
+                    <div class="mt-2"><strong>فئات الأعمار المطلوبة:</strong> ${getFieldValue('agingCategories')}</div>
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-exclamation-triangle me-2"></i> تقارير العملاء المتعثرين</div>
+                    ${formatListTable(distressedReports, 'التقرير')}
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-chart-simple me-2"></i> تقارير أداء التحصيل</div>
+                    ${formatListTable(performanceReports, 'التقرير')}
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-phone-alt me-2"></i> تقارير متابعة العملاء</div>
+                    ${formatListTable(followupReports, 'التقرير')}
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-chart-line me-2"></i> تقارير التوقعات والتنبؤات</div>
+                    ${formatListTable(forecastReports, 'التقرير')}
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-chart-pie me-2"></i> لوحات المعلومات (Dashboards)</div>
+                    ${formatListTable(dashboards, 'لوحة المعلومات')}
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-plus-circle me-2"></i> تقارير مخصصة إضافية</div>
+                    ${formatCustomReportsTable()}
+                </div>
+                
+                <div class="preview-card">
+                    <div class="section-header"><i class="fas fa-info-circle me-2"></i> معلومات إضافية</div>
+                    <div class="preview-item"><span class="preview-label">ملاحظات</span><span class="preview-value">${getFieldValue('additionalInfo')}</span></div>
+                </div>
+                
+                <div class="preview-card text-center">
+                    <hr>
+                    <p style="color: #1e4a3b;"><i class="fas fa-check-circle me-2"></i>تم تعبئة استبيان تقارير التحصيل المطلوبة بنجاح</p>
+                    <p class="text-muted small">تاريخ الإصدار: ${new Date().toLocaleDateString('ar-EG')}</p>
+                </div>
+            `;
+            document.getElementById('previewContent').innerHTML = previewHtml;
+        }
+        
+        function resetForm() { if(confirm('هل أنت متأكد من إعادة تعيين جميع البيانات؟')) location.reload(); }
+        
+        function exportToExcel() {
+            const companyName = getFieldValue('companyName', 'منشأة');
+            const agingReports = getAgingReports();
+            const distressedReports = getDistressedReports();
+            const performanceReports = getPerformanceReports();
+            const followupReports = getFollowupReports();
+            const forecastReports = getForecastReports();
+            const dashboards = getDashboards();
+            const customReports = getCustomReportsData();
+            
+            const excelData = [
+                ['استبيان تقارير التحصيل المطلوبة', 'خدمة تحصيل الدفعات والفواتير'],
+                ['تاريخ التقرير', new Date().toLocaleDateString('ar-EG')],
+                ['اسم المنشأة', companyName],
+                ['المسؤول', getFieldValue('contactPerson')],
+                ['المسمى الوظيفي', getFieldValue('jobTitle')],
+                ['البريد الإلكتروني', getFieldValue('clientEmail')],
+                ['رقم الهاتف', getFieldValue('clientPhone')],
+                [], ['1. معلومات عامة:', ''],
+                ['نظام التقارير الحالي', getSelectText('reportSystem')],
+                ['تكرار التقارير', getSelectText('reportFrequency')],
+                ['تنسيق التقارير المفضل', getSelectText('reportFormat')],
+                [], ['2. تقارير أعمار الديون:', ''],
+                ...agingReports.map((r, i) => [`تقرير ${i+1}`, r]),
+                ['فئات الأعمار المطلوبة', getFieldValue('agingCategories')],
+                [], ['3. تقارير العملاء المتعثرين:', ''],
+                ...distressedReports.map((r, i) => [`تقرير ${i+1}`, r]),
+                [], ['4. تقارير أداء التحصيل:', ''],
+                ...performanceReports.map((r, i) => [`تقرير ${i+1}`, r]),
+                [], ['5. تقارير متابعة العملاء:', ''],
+                ...followupReports.map((r, i) => [`تقرير ${i+1}`, r]),
+                [], ['6. تقارير التوقعات والتنبؤات:', ''],
+                ...forecastReports.map((r, i) => [`تقرير ${i+1}`, r]),
+                [], ['7. لوحات المعلومات:', ''],
+                ...dashboards.map((r, i) => [`لوحة ${i+1}`, r]),
+                [], ['8. تقارير مخصصة:', ''],
+                ['اسم التقرير', 'التكرار', 'التنسيق', 'الوصف'],
+                ...customReports.map(r => [r.name, r.frequency || '—', r.format || '—', r.desc || '—']),
+                [], ['9. معلومات إضافية:', ''],
+                ['ملاحظات', getFieldValue('additionalInfo')],
+                [], ['للتواصل: info@takalief.com | +20 104 439 1177'], ['www.takalief.com']
+            ];
+            
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            ws['!cols'] = [{wch:35}, {wch:50}];
+            XLSX.utils.book_append_sheet(wb, ws, 'تقارير_التحصيل');
+            XLSX.writeFile(wb, `Collection_Reports_${companyName.replace(/\s/g, '_')}_${new Date().toISOString().slice(0,10)}.xlsx`);
+            alert('تم تصدير استبيان Excel بنجاح');
+        }
+        
+        async function exportToPDF(event) {
+            try {
+                const exportBtn = event.target;
+                const originalText = exportBtn.innerHTML;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> جاري إعداد التقرير...';
+                exportBtn.disabled = true;
+                
+                const pdfContainer = document.getElementById('pdf-export-container');
+                pdfContainer.innerHTML = '';
+                pdfContainer.style.opacity = '1';
+                pdfContainer.style.position = 'absolute';
+                pdfContainer.style.top = '0';
+                pdfContainer.style.left = '0';
+                pdfContainer.style.zIndex = '9999';
+                
+                const companyName = getFieldValue('companyName', 'غير محدد');
+                const contactPerson = getFieldValue('contactPerson', 'غير محدد');
+                const currentDate = new Date().toLocaleDateString('ar-EG');
+                const agingReports = getAgingReports();
+                const distressedReports = getDistressedReports();
+                const performanceReports = getPerformanceReports();
+                const followupReports = getFollowupReports();
+                const forecastReports = getForecastReports();
+                const dashboards = getDashboards();
+                const customReports = getCustomReportsData();
+                
+                function buildListRows(items) {
+                    if (!items.length) return '技术上<td colspan="2" style="text-align:center;">لا توجد تقارير محددة</td></tr>';
+                    let rows = '';
+                    items.forEach((item, i) => {
+                        rows += `<tr><td style="text-align:center; width:10%;">${i+1}</td><td style="text-align:right;">${item}</td></tr>`;
+                    });
+                    return rows;
+                }
+                
+                function buildCustomRows() {
+                    if (!customReports.length) return '<tr><td colspan="5" style="text-align:center;">لا توجد تقارير مخصصة</td></tr>';
+                    let rows = '';
+                    customReports.forEach((report, i) => {
+                        rows += `<tr>
+                            <td style="text-align:center;">${i+1}</td>
+                            <td style="text-align:right;">${report.name}</td>
+                            <td style="text-align:center;">${report.frequency || '—'}</td>
+                            <td style="text-align:center;">${report.format || '—'}</td>
+                            <td style="text-align:right;">${report.desc || '—'}</td>
+                        </tr>`;
+                    });
+                    return rows;
+                }
+                
+                const pdfWrapper = document.createElement('div');
+                pdfWrapper.className = 'pdf-wrapper';
+                pdfWrapper.innerHTML = `
+                    <div class="pdf-cover">
+                        <h1>استبيان تقارير التحصيل المطلوبة</h1>
+                        <h3>خدمة تحصيل الدفعات والفواتير</h3>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 20px; margin-top: 30px; border: 2px solid #52b788;">
+                            <p style="font-size: 16px;">المنشأة: ${companyName}</p>
+                            <p style="font-size: 14px;">المسؤول: ${contactPerson}</p>
+                            <p style="font-size: 14px;">تاريخ التقرير: ${currentDate}</p>
+                        </div>
+                    </div>
+                    
+                    <div style="page-break-before: always;">
+                        <h2 class="pdf-section-title">بيانات المنشأة</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 35%;">البيان</th><th>القيمة</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td style="text-align:right;">اسم المنشأة</td><td style="text-align:right;">${getFieldValue('companyName')}</td></tr>
+                                <tr><td style="text-align:right;">النشاط الرئيسي</td><td style="text-align:right;">${getFieldValue('businessActivity')}</td></tr>
+                                <tr><td style="text-align:right;">حجم المنشأة</td><td style="text-align:right;">${getSelectText('companySize')}</td></tr>
+                                <tr><td style="text-align:right;">المسؤول عن التقييم</td><td style="text-align:right;">${getFieldValue('contactPerson')} (${getFieldValue('jobTitle')})</td></tr>
+                                <tr><td style="text-align:right;">البريد الإلكتروني</td><td style="text-align:right;">${getFieldValue('clientEmail')}</td></tr>
+                                <tr><td style="text-align:right;">رقم الهاتف</td><td style="text-align:right;">${getFieldValue('clientPhone')}</td></tr>
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">معلومات عامة عن نظام التقارير</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 35%;">البيان</th><th>القيمة</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td style="text-align:right;">نظام التقارير الحالي</td><td style="text-align:right;">${getSelectText('reportSystem')}</td></tr>
+                                <tr><td style="text-align:right;">تكرار التقارير</td><td style="text-align:right;">${getSelectText('reportFrequency')}</td></tr>
+                                <tr><td style="text-align:right;">تنسيق التقارير المفضل</td><td style="text-align:right;">${getSelectText('reportFormat')}</td></tr>
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">تقارير أعمار الديون</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 10%;">م</th><th>التقرير</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildListRows(agingReports)}
+                            </tbody>
+                        </table>
+                        <p><strong>فئات الأعمار المطلوبة:</strong> ${getFieldValue('agingCategories')}</p>
+                        
+                        <h2 class="pdf-section-title">تقارير العملاء المتعثرين</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 10%;">م</th><th>التقرير</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildListRows(distressedReports)}
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">تقارير أداء التحصيل</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 10%;">م</th><th>التقرير</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildListRows(performanceReports)}
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">تقارير متابعة العملاء</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 10%;">م</th><th>التقرير</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildListRows(followupReports)}
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">تقارير التوقعات والتنبؤات</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 10%;">م</th><th>التقرير</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildListRows(forecastReports)}
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">لوحات المعلومات (Dashboards)</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 10%;">م</th><th>لوحة المعلومات</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildListRows(dashboards)}
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">تقارير مخصصة إضافية</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 5%;">م</th><th>اسم التقرير</th><th>التكرار</th><th>التنسيق</th><th>الوصف</th></tr>
+                            </thead>
+                            <tbody>
+                                ${buildCustomRows()}
+                            </tbody>
+                        </table>
+                        
+                        <h2 class="pdf-section-title">معلومات إضافية</h2>
+                        <table class="pdf-table">
+                            <thead>
+                                <tr><th style="width: 35%;">البيان</th><th>القيمة</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr><td style="text-align:right;">ملاحظات</td><td style="text-align:right;">${getFieldValue('additionalInfo')}</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="page-break-before: always; margin-top: 40px;">
+                        <div class="pdf-footer">
+                            <div style="font-size: 18px; font-weight: 700; color: #52b788;">تكاليف - حلول أعمال ذكية</div>
+                            <div>القاهرة - مصر | +20 104 439 1177 | info@takalief.com</div>
+                            <hr style="width: 150px; margin: 15px auto; border: 1px solid #52b788;">
+                            <p>تم تعبئة هذا الاستبيان لتحديد تقارير التحصيل المطلوبة</p>
+                            <p>تاريخ الإصدار: ${currentDate}</p>
+                            <p style="margin-top: 20px;">توقيع المسؤول: _________________________</p>
+                            <p>جميع الحقوق محفوظة © 2026</p>
+                        </div>
+                    </div>
+                `;
+                
+                pdfContainer.appendChild(pdfWrapper);
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                const canvas = await html2canvas(pdfContainer, { scale: 2, backgroundColor: '#ffffff', logging: false, useCORS: true });
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210;
+                const pageHeight = 297;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+                heightLeft -= pageHeight;
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+                    heightLeft -= pageHeight;
+                }
+                
+                pdf.save(`Collection_Reports_${companyName.replace(/[^\u0600-\u06FFa-zA-Z0-9]/g, '_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+                
+                pdfContainer.innerHTML = '';
+                pdfContainer.style.opacity = '0';
+                pdfContainer.style.position = 'fixed';
+                pdfContainer.style.top = '-99999px';
+                
+                exportBtn.innerHTML = originalText;
+                exportBtn.disabled = false;
+                alert('تم تصدير التقرير بنجاح');
+            } catch (error) {
+                console.error('PDF Error:', error);
+                alert('حدث خطأ: ' + error.message);
+                const exportBtn = event.target;
+                exportBtn.innerHTML = '<i class="fas fa-file-pdf me-2"></i> تصدير التقرير (PDF)';
+                exportBtn.disabled = false;
+            }
+        }
+        
+        function init() {
+            const container = document.getElementById('customReportsContainer');
+            container.innerHTML = '';
+            const firstReport = document.createElement('div');
+            firstReport.className = 'report-item';
+            firstReport.id = 'customReport-1';
+            firstReport.innerHTML = `
+                <div class="row mb-2">
+                    <div class="col-md-5"><input type="text" class="form-control" placeholder="اسم التقرير" id="reportName1"></div>
+                    <div class="col-md-3"><select class="form-select" id="reportFrequency1"><option value="">التكرار</option><option value="يومي">يومي</option><option value="أسبوعي">أسبوعي</option><option value="شهري">شهري</option><option value="ربع سنوي">ربع سنوي</option><option value="عند الطلب">عند الطلب</option></select></div>
+                    <div class="col-md-3"><select class="form-select" id="reportFormatCustom1"><option value="">التنسيق</option><option value="PDF">PDF</option><option value="Excel">Excel</option><option value="كليهما">كليهما</option></select></div>
+                    <div class="col-md-1"><button class="btn btn-danger btn-sm" onclick="removeCustomReport(1)" style="display:none;"><i class="fas fa-trash"></i></button></div>
+                </div>
+                <div class="row"><div class="col-md-12"><textarea class="form-control" rows="2" placeholder="وصف التقرير والمحتوى المطلوب" id="reportDesc1"></textarea></div></div>
+            `;
+            container.appendChild(firstReport);
+            customReportCount = 1;
+            refreshPreview();
+            const today = new Date().toISOString().split('T')[0];
+            if (document.getElementById('submissionDate')) document.getElementById('submissionDate').value = today;
+        }
+        
+        window.onload = init;
+    </script>
+</body>
+</html>
